@@ -6,6 +6,13 @@
     local_config_path: "./gost-config.json"
     remote_config_file_path: "/opt/gost/cmd/gost/gost-config.json"
 
+    app_name: gost
+    app_path: /opt/gost/cmd/gost/
+    app_binary: gost
+    app_args:  -C /opt/gost/cmd/gost/gost-config.json
+    app_user: root
+    app_group: root
+
   tasks:
     - name: Update package cache
       apt:
@@ -33,10 +40,38 @@
         src: "{{ local_config_path }}"
         dest: "{{ remote_config_file_path }}"
 
-    - name: Run Gost with config file
-      command: /opt/gost/cmd/gost/gost -C /opt/gost/cmd/gost/gost-config.json > /dev/null 2>&1 &
-      async: 30
-      poll: 0
-      register: background_task
-      # args:
-      #   chdir: /opt/gost
+    # - name: Run Gost with config file
+    #   command: /opt/gost/cmd/gost/gost -C /opt/gost/cmd/gost/gost-config.json > /dev/null 2>&1 &
+    #   async: 30
+    #   poll: 0
+    #   register: background_task
+    #   # args:
+    #   #   chdir: /opt/gost
+
+    - name: Create systemd service file
+      ansible.builtin.template:
+        src: gost.service.j2
+        dest: "/etc/systemd/system/{{ app_name }}.service"
+        mode: '0644'
+        owner: 'root'
+        group: 'root'
+      notify: Reload systemd
+
+    - name: Start and enable the systemd service
+      ansible.builtin.service:
+        name: "{{ app_name }}"
+        state: started
+        enabled: yes
+      notify: Restart service
+
+  handlers:
+    - name: Reload systemd
+      ansible.builtin.systemd:
+        name: "{{ app_name }}"
+        # state: reloaded
+        daemon_reload: true
+
+    - name: Restart service
+      ansible.builtin.service:
+        name: "{{ app_name }}"
+        state: restarted

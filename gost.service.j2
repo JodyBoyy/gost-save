@@ -1,0 +1,11 @@
+[Unit]
+Description=Gost Proxy
+
+[Service]
+ExecStart={{ app_path }}/{{ app_binary }} {{ app_args }}
+Restart=always
+User={{ app_user }}
+Group={{ app_group }}
+
+[Install]
+WantedBy=default.target
