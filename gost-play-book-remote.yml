@@ -4,7 +4,7 @@
 
   vars:
     local_config_path: "./gost-config.json"
-    remote_config_file_path: "/opt/gost/gost-config.json"
+    remote_config_file_path: "/opt/gost/cmd/gost/gost-config.json"
 
   tasks:
     - name: Update package cache
@@ -23,10 +23,10 @@
     - name: Clone gost repository
       git:
         repo: https://github.com/ginuerzh/gost.git
-        dest: /opt
+        dest: /opt/gost
 
     - name: Build gost
-      command: "cd /opt/gost/cmd/gost && go build"
+      shell: "cd /opt/gost/cmd/gost && go build"
 
     - name: Copy Gost Config filefrom local to remote
       ansible.builtin.copy:
@@ -34,6 +34,9 @@
         dest: "{{ remote_config_file_path }}"
 
     - name: Run Gost with config file
-      command: gost -C gost-config.json
-      args:
-        chdir: /opt/gost
+      command: /opt/gost/cmd/gost/gost -C /opt/gost/cmd/gost/gost-config.json > /dev/null 2>&1 &
+      async: 30
+      poll: 0
+      register: background_task
+      # args:
+      #   chdir: /opt/gost

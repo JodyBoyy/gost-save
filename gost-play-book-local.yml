@@ -4,12 +4,10 @@
 
   vars:
     local_config_path: "./gost-config-local.json"
-    remote_config_file_path: "/opt/gost"
+    remote_config_file_path: "/opt/gost/cmd/gost/gost-config-local.json"
 
-    destination_server_ip: "2.1.1.76"
-    # destination_server_port: "your_destination_server_port"
-    udp_destination_server_ip: "2.1.1.76"
-    # udp_destination_server_port: "your_udp_destination_server_port"
+    destination_server_ip: "135.181.174.231"
+    udp_destination_server_ip: "135.181.174.231"
 
 
   tasks:
@@ -29,24 +27,32 @@
     - name: Clone gost repository
       git:
         repo: https://github.com/ginuerzh/gost.git
-        dest: /opt
+        dest: /opt/gost
 
-    - name: Build gost
-      command: "cd /opt/gost/cmd/gost && go build"
+    - name: Set environment variable persistently
+      lineinfile:
+        path: "/home/{{ ansible_user }}/.bashrc"
+        line: "export GOPROXY=http://135.181.174.200:8123/repository/go-proxy/"
+        create: yes
+      become: yes
+      become_user: "{{ ansible_user }}"
+
+
+    - name: Build gost ( with GOPROXY )
+      shell: "cd /opt/gost/cmd/gost/ && GOPROXY=http://135.181.174.200:8123/repository/go-proxy/ go build"
 
     - name: Copy Gost configuration template
       ansible.builtin.template:
         src: "./gost-config-local.json"
-        dest: "/opt/gost/gost-config-local.json"
+        dest: "/opt/gost/cmd/gost/gost-config-local.json"
       tags:
         - copy_config
 
     - name: Run Gost with config file
-      command: gost -C gost-config-local.json
-      args:
-        chdir: /opt/gost
+      command: /opt/gost/cmd/gost/gost -C /opt/gost/cmd/gost/gost-config-local.json  > /var/log/gost.log &
+      async: 30
+      poll: 0
+      register: background_task
+      # args:
+      #   chdir: /opt/gost
 
-    # - name: Copy Gost Config filefrom local to remote
-    #   ansible.builtin.copy:
-    #     src: "{{ local_config_path }}"
-    #     dest: "{{ remote_config_file_path }}"
