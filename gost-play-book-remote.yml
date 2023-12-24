@@ -1,0 +1,39 @@
+---
+- hosts: remote
+  become: yes
+
+  vars:
+    local_config_path: "./gost-config.json"
+    remote_config_file_path: "/opt/gost/gost-config.json"
+
+  tasks:
+    - name: Update package cache
+      apt:
+        update_cache: yes
+      retries: 5
+
+    - name: Install Git
+      package:
+        name: git
+
+    - name: Install Go
+      package:
+        name: golang-go
+
+    - name: Clone gost repository
+      git:
+        repo: https://github.com/ginuerzh/gost.git
+        dest: /opt
+
+    - name: Build gost
+      command: "cd /opt/gost/cmd/gost && go build"
+
+    - name: Copy Gost Config filefrom local to remote
+      ansible.builtin.copy:
+        src: "{{ local_config_path }}"
+        dest: "{{ remote_config_file_path }}"
+
+    - name: Run Gost with config file
+      command: gost -C gost-config.json
+      args:
+        chdir: /opt/gost

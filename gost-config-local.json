@@ -1,0 +1,27 @@
+{
+    "Debug": false,
+    "Retries": 3,
+    "ServeNodes": [
+      {
+        "Scheme": "socks5",
+        "Addr": "0.0.0.0:8008",
+        "Username": "UserName",
+        "Password": "6566646f3c0d14d52600c46e91724d6b5448a36b1cc47b8cffc69a9e16a1a7be69095b93847eca6e"
+      }
+    ],
+    "ChainNodes": [
+        {
+          "Scheme": "ss",
+          "Addr": "{{ destination_server_ip }}:8008",
+          "Cipher": "aes-256-ctr",
+          "Password": "6566646f3c0d14d52600c46e91724d6b5448a36b1cc47b8cffc69a9e16a1a7be69095b93847eca6e"
+        },
+        {
+          "Scheme": "ssudp",
+          "Addr": "{{ udp_destination_server_ip }}:8008",
+          "Cipher": "aes-256-ctr",
+          "Password": "6566646f3c0d14d52600c46e91724d6b5448a36b1cc47b8cffc69a9e16a1a7be69095b93847eca6e"
+        }
+      ]
+    }
+  
