@@ -1,11 +1,16 @@
 ---
 - hosts: remote
   become: yes
+  vars_files:
+    - vault.yml
+
 
   vars:
+    ## config paths
     local_config_path: "./gost-config.json"
     remote_config_file_path: "/opt/gost/cmd/gost/gost-config.json"
 
+    ## vars for build and configuration
     app_name: gost
     app_path: /opt/gost/cmd/gost/
     app_binary: gost
@@ -13,7 +18,13 @@
     app_user: root
     app_group: root
 
+    git_repo_address: https://github.com/ginuerzh/gost.git
+    git_clone_path: /opt/gost
+    gost_build_path: /opt/gost/cmd/gost/
+
+
   tasks:
+    #### install dependancies
     - name: Update package cache
       apt:
         update_cache: yes
@@ -26,20 +37,28 @@
     - name: Install Go
       package:
         name: golang-go
+    ##
 
     - name: Clone gost repository
       git:
-        repo: https://github.com/ginuerzh/gost.git
-        dest: /opt/gost
+        repo: '{{ git_repo_address }}'
+        dest: '{{ git_clone_path }}'
 
     - name: Build gost
-      shell: "cd /opt/gost/cmd/gost && go build"
+      shell: "cd {{ gost_build_path }} && go build"
 
-    - name: Copy Gost Config filefrom local to remote
-      ansible.builtin.copy:
+    # - name: Copy Gost Config filefrom local to remote
+    #   ansible.builtin.copy:
+    #     src: "{{ local_config_path }}"
+    #     dest: "{{ remote_config_file_path }}"
+
+    - name: Copy and render(pass) gost config file
+      ansible.builtin.template:
         src: "{{ local_config_path }}"
         dest: "{{ remote_config_file_path }}"
-
+        owner: '{{ ansible_user }}'
+        group: '{{ ansible_user }}'
+      notify: Reload systemd
     # - name: Run Gost with config file
     #   command: /opt/gost/cmd/gost/gost -C /opt/gost/cmd/gost/gost-config.json > /dev/null 2>&1 &
     #   async: 30
@@ -53,8 +72,8 @@
         src: gost.service.j2
         dest: "/etc/systemd/system/{{ app_name }}.service"
         mode: '0644'
-        owner: 'root'
-        group: 'root'
+        owner: '{{ ansible_user }}'
+        group: '{{ ansible_user }}'
       notify: Reload systemd
 
     - name: Start and enable the systemd service

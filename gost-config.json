@@ -2,8 +2,8 @@
   "Debug": false,
   "Retries": 3,
   "ServeNodes": [
-    "socks5://UserName:6566646f3c0d14d52600c46e91724d6b5448a36b1cc47b8cffc69a9e16a1a7be69095b93847eca6e@0.0.0.0:8586",
-    "ss://aes-256-ctr:6566646f3c0d14d52600c46e91724d6b5448a36b1cc47b8cffc69a9e16a1a7be69095b93847eca6e@0.0.0.0:8008",
-    "ssu://aes-256-ctr:6566646f3c0d14d52600c46e91724d6b5448a36b1cc47b8cffc69a9e16a1a7be69095b93847eca6e@0.0.0.0:8008"
+    "socks5://UserName:{{ proxy_password }}@0.0.0.0:8586",
+    "ss://aes-256-ctr:{{ proxy_password }}@0.0.0.0:8008",
+    "ssu://aes-256-ctr:{{ proxy_password }}@0.0.0.0:8008"
 ]
 }

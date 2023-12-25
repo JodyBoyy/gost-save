@@ -3,12 +3,14 @@
   become: yes
 
   vars:
+    ## config paths
     local_config_path: "./gost-config-local.json"
     remote_config_file_path: "/opt/gost/cmd/gost/gost-config-local.json"
 
+    ## proxy server IP ( used in jinja2 template for gost config file )
     destination_server_ip: "135.181.174.231"
-    udp_destination_server_ip: "135.181.174.231"
 
+    ## vars for build and configuration
     app_name: gost
     app_path: /opt/gost/cmd/gost/
     app_binary: gost
@@ -16,8 +18,14 @@
     app_user: root
     app_group: root
 
+    go_privet_repo_address: http://135.181.174.200:8123/repository/go-proxy/
+    git_repo_address: https://github.com/ginuerzh/gost.git
+    git_clone_path: /opt/gost
+    gost_build_path: /opt/gost/cmd/gost/
 
+    
   tasks:
+    #### install dependancies
     - name: Update package cache
       apt:
         update_cache: yes
@@ -30,28 +38,29 @@
     - name: Install Go
       package:
         name: golang-go
+    ##
 
     - name: Clone gost repository
       git:
-        repo: https://github.com/ginuerzh/gost.git
-        dest: /opt/gost
+        repo: "{{ git_repo_address }}"
+        dest: "{{ git_clone_path }}"
 
     - name: Set environment variable persistently
       lineinfile:
         path: "/home/{{ ansible_user }}/.bashrc"
-        line: "export GOPROXY=http://135.181.174.200:8123/repository/go-proxy/"
+        line: "export GOPROXY={{ go_privet_repo_address }}"
         create: yes
       become: yes
       become_user: "{{ ansible_user }}"
 
 
     - name: Build gost ( with GOPROXY )
-      shell: "cd /opt/gost/cmd/gost/ && GOPROXY=http://135.181.174.200:8123/repository/go-proxy/ go build"
+      shell: "cd {{ gost_build_path }} && go build"
 
     - name: Copy Gost configuration template
       ansible.builtin.template:
-        src: "./gost-config-local.json"
-        dest: "/opt/gost/cmd/gost/gost-config-local.json"
+        src: "{{ local_config_path }}"
+        dest: "{{ gost_build_path }}/{{ local_config_path }}"
       tags:
         - copy_config
 
@@ -65,8 +74,8 @@
         src: gost.service.j2
         dest: "/etc/systemd/system/{{ app_name }}.service"
         mode: '0644'
-        owner: 'root'
-        group: 'root'
+        owner: '{{ ansible_user }}'
+        group: '{{ ansible_user }}'
       notify: Reload systemd
 
     - name: Start and enable the systemd service
