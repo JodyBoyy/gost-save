@@ -1,5 +1,5 @@
 [remote]
-135.181.174.231 ansible_user=root
+135.181.174.231 ansible_user=root ansible_port=6543
 
 [local]
 2.1.1.76 ansible_user=root

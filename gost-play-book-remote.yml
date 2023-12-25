@@ -7,7 +7,7 @@
 
   vars:
     ## config paths
-    local_config_path: "./gost-config.json"
+    local_config_path: "./gost-config.json.j2"
     remote_config_file_path: "/opt/gost/cmd/gost/gost-config.json"
 
     ## vars for build and configuration
