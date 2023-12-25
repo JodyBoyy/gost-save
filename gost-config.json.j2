@@ -1,0 +1,9 @@
+{
+  "Debug": false,
+  "Retries": 3,
+  "ServeNodes": [
+    "socks5://UserName:{{ proxy_password }}@0.0.0.0:8586",
+    "ss://aes-256-ctr:{{ proxy_password }}@0.0.0.0:8008",
+    "ssu://aes-256-ctr:{{ proxy_password }}@0.0.0.0:8008"
+]
+}

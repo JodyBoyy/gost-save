@@ -1,0 +1,10 @@
+{
+    "Debug": false,
+    "Retries": 2,
+    "ServeNodes": [
+        "socks5://UserName:{{ proxy_password }}@0.0.0.0:8586"
+    ],
+    "ChainNodes": [
+        "ss://aes-256-ctr:{{ proxy_password }}@{{ destination_server_ip }}:8008"
+    ]
+}
